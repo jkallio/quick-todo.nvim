@@ -1,82 +1,61 @@
--- This plugin is for creating a quick TODO list in a special file
--- stored in user application data directory.
-local todo_file_path = vim.fn.stdpath('data') .. '/quick-todo.json'
 local utils = require('quick-todo.utils')
-local logger = utils.logger
+local _todo_path = ''
 
 local M = {}
 
--- Creates the quick-todo.json file if it doesn't exist
+--- Creates the quick-todo directory if it doesn't exist
 M.setup = function()
-    local file = io.open(todo_file_path, 'r')
-    if file ~= nil then
-        file:close()
-    else
-        file = io.open(todo_file_path, 'w')
-        if file == nil then
-            logger.error('Error creating quick-todo.json file')
-        else
-            file:write('{}')
-            file:close()
-            logger.info('Created file ' .. todo_file_path)
-        end
-    end
+    _todo_path = utils.get_working_directory_path() .. '/todo.txt'
 end
 
--- Returns the full contents of the quick-todo.json file
-local function read_todo_file_contents()
-    local file = io.open(todo_file_path, 'r')
-    if file == nil then
-        logger.error('Error opening quick-todo.json file for reading')
-        return nil
-    end
-
-    local file_contents = file:read('*a')
-    file:close()
-
-    local json_data = vim.fn.json_decode(file_contents)
-
-    if json_data == nil then
-        logger.error('Error decoding quick-todo.json file')
-        return nil
-    end
-
-    return json_data
-end
-
--- Write json_data to the quick-todo.json file
-local function write_todo_file_contents(json_data)
-    local file = io.open(todo_file_path, 'w')
-    if file == nil then
-        logger.error('Error opening quick-todo.json file for writing')
-        return
-    end
-
-    file:write(vim.fn.json_encode(json_data))
-    file:close()
-    logger.info('Updated ' .. todo_file_path)
-end
-
--- Add new todo to the list for the current working directory
--- The title is queried from the user
+--- Add new todo to the list for the current working directory
+--- The todo input string is queried from the user
 M.add = function()
-    local json_data = read_todo_file_contents()
-    if json_data == nil then
-        logger.error('Error getting quick-todo.json file contents')
+    local todo = vim.fn.input('Add TODO: ')
+    if todo ~= nil and #todo > 0 then
+        utils.append_file(_todo_path, { todo })
+    end
+end
+
+--- Toggle the TODO popup window
+M.toggle = function()
+    if utils.is_popup_window_open() then
+        local lines = utils.close_popup_window()
+        if lines ~= nil then
+            utils.write_file_contents(_todo_path, lines)
+        end
         return
     end
 
-    local key = utils.get_path_key()
-    if json_data[key] == nil then
-        logger.info('Creating new todo list for ' .. key)
-        json_data[key] = {}
+    utils.touch_file(_todo_path)
+    local read_lines = utils.read_file_contents(_todo_path)
+    if read_lines == nil then
+        -- Failed to read the `todo.txt` file
+        return
     end
 
-    local title = vim.fn.input('Add TODO: ')
-    local new_todo = { done = false, title = title }
-    table.insert(json_data[key], new_todo)
+    local win_id = utils.open_popup_window(read_lines)
+    if win_id == nil then
+        -- Failed to open the TODO popup window
+        return
+    end
 
-    write_todo_file_contents(json_data)
+    local bufnr = vim.api.nvim_win_get_buf(win_id)
+    if bufnr == nil or vim.api.nvim_buf_is_valid(bufnr) == false then
+        -- Failed to get valid buffer number
+        utils.close_popup_window()
+        return
+    end
+
+    vim.api.nvim_buf_attach(bufnr, false, {
+        on_lines = function()
+            local write_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+            if write_lines ~= nil then
+                -- TODO: Maybe the buffer should be written on close and not on every change?
+                utils.write_file_contents(_todo_path, write_lines)
+            end
+        end
+    })
 end
 
 return M
