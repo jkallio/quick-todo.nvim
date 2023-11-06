@@ -1,0 +1,2 @@
+[ ] Add setup options
+[ ] Add README.md

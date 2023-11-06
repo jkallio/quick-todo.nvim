@@ -56,7 +56,7 @@ end
 
 --- Open a popup window with the given contents
 --- @param rows string[] The contents for the popup window buffer
---- @return number ID of the created popup window
+--- @return number, number The window ID and buffer number for the popup window
 M.open_popup_window = function(rows)
     M.close_popup_window()
 
@@ -86,7 +86,7 @@ M.open_popup_window = function(rows)
     vim.api.nvim_win_set_option(_win_id, 'wrap', true)
     vim.api.nvim_win_set_option(_win_id, 'number', true)
 
-    return _win_id
+    return _win_id, _popup_bufnr
 end
 
 --- Close the popup window
@@ -180,6 +180,11 @@ M.append_file = function(path, lines)
         end
     end
     file:close()
+end
+
+--- Check if the given string starts with the given start string
+M.starts_with = function(str, start)
+    return str:sub(1, #start) == start
 end
 
 return M
