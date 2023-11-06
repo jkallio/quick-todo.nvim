@@ -18,7 +18,7 @@ M.add = function()
 end
 
 --- Toggle the TODO popup window
-M.toggle = function()
+M.toggle_ui = function()
     if utils.is_popup_window_open() then
         local lines = utils.close_popup_window()
         if lines ~= nil then
@@ -47,6 +47,25 @@ M.toggle = function()
         return
     end
 
+    -- TODO: Maybe these keymaps should be user configurable?
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<CR>', ':lua require("quick-todo").toggle_done()<CR>', {
+        noremap = true,
+        silent = true
+    })
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'q', ':lua require("quick-todo").toggle_ui()<CR>', {
+        noremap = true,
+        silent = true
+    })
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<A-J>', ':m .+1<CR>==', {
+        noremap = true,
+        silent = true
+    })
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<A-K>', ':m .-2<CR>==', {
+        noremap = true,
+        silent = true
+    })
+
+    -- Attach `on_lines` listener, which triggers every time a line is changed
     vim.api.nvim_buf_attach(bufnr, false, {
         on_lines = function()
             local write_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -56,6 +75,32 @@ M.toggle = function()
             end
         end
     })
+end
+
+--- Toggle the TODO
+M.toggle_done = function()
+    if utils.is_popup_window_open() == false then
+        return
+    end
+
+    local line = vim.api.nvim_get_current_line()
+    if line == nil or #line == 0 then
+        return
+    end
+
+    local function starts_with(str, start)
+        return str:sub(1, #start) == start
+    end
+
+    if starts_with(line, '[ ]') then
+        line = line:gsub('%[ %]', '[x]')
+        vim.api.nvim_set_current_line(line)
+    elseif starts_with(line, '[x]') then
+        line = line:gsub('%[x%]', '[ ]')
+        vim.api.nvim_set_current_line(line)
+    else
+        vim.api.nvim_set_current_line('[ ] ' .. line)
+    end
 end
 
 return M
