@@ -55,9 +55,10 @@ M.is_popup_window_open = function()
 end
 
 --- Open a popup window with the given contents
+--- @param width_percent number The width of the popup window as a percentage of the screen width
 --- @param rows string[] The contents for the popup window buffer
 --- @return number, number The window ID and buffer number for the popup window
-M.open_popup_window = function(rows)
+M.open_popup_window = function(width_percent, rows)
     M.close_popup_window()
 
     if rows == nil then
@@ -68,8 +69,10 @@ M.open_popup_window = function(rows)
     vim.api.nvim_buf_set_lines(_popup_bufnr, 0, -1, false, rows)
 
     local ui = vim.api.nvim_list_uis()[1]
-    local width = vim.fn.max({ 40, vim.fn.round(ui.width * 0.3) })
-    local height = vim.fn.max({ 10, vim.fn.round(ui.height * 0.3) })
+    local width = vim.fn.round(ui.width * (width_percent / 100.0))
+    local row_height = vim.fn.round(ui.height * #rows / 100.0)
+    local height = vim.fn.max({ 10, vim.fn.min({row_height, vim.fn.round(ui.height * 0.9)})})
+
     _win_id = vim.api.nvim_open_win(_popup_bufnr, true, {
         relative = 'editor',
         width = width,
@@ -110,7 +113,7 @@ end
 --- @param path string The path to the file
 M.read_file_contents = function(path)
     if path == nil then
-        M.log.error('Invalid path: ' .. path)
+        M.log.error('Invalid path (nil)')
         return nil
     end
 
@@ -133,7 +136,7 @@ end
 --- @param lines string[] The contents to write to the file
 M.write_file_contents = function(path, lines)
     if path == nil then
-        M.log.error('Invalid path: ' .. path)
+        M.log.error('Invalid path (nil)')
         return
     end
 
@@ -160,7 +163,7 @@ end
 --- @param lines string[] The rows to append to the file
 M.append_file = function(path, lines)
     if path == nil then
-        M.log.error('Invalid path: ' .. path)
+        M.log.error('Invalid path (nil)')
         return
     end
 

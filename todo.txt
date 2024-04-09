@@ -1,2 +1,10 @@
-[ ] Add setup options
-[ ] Add README.md
+[x] Opts: User definable fixed path for TODO file
+[x] Opts: User definable Popup window width
+[x] Opts: User definable options
+[x] UI: Automatically adjusted window height
+[x] UI: Toggle done[x] / undone[ ] tasks
+[x] UI: Add TODO entry without opening popup window
+[x] UI: Toggle the popup window
+[x] UI: Open & Close UI popup window
+[x] Core: Create new `todo.txt` if not exist
+[x] Core: Give global path as argument for TODO file.
