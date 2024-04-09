@@ -14,15 +14,28 @@ end
 
 --- Add new todo to the list for the current working directory
 --- The todo input string is queried from the user
-M.add = function(path)
-    _current_path = path or _opts.todo_path
+M.add = function(args)
+    _current_path = utils.get_default_path()
+    if _opts.use_fixed_path or (args and args.use_fixed_path) then
+        _current_path = _opts.fixed_path
+    end
+
     local input = vim.fn.input('Add TODO: ')
     todo.add_new(_current_path, input)
 end
 
 --- Open the TODO popup window
-M.open_ui = function(path)
-    _current_path = path or _opts.todo_path
+M.open_ui = function(args)
+    _current_path = utils.get_default_path()
+    if _opts.use_fixed_path or (args and args.use_fixed_path) then
+        _current_path = _opts.fixed_path
+    end
+    M.open_ui_with_path({path=_current_path })
+end
+
+-- Open the TODO popup window with specific path
+M.open_ui_with_path = function(args)
+    _current_path = args.path
     utils.touch_file(_current_path)
     local lines = utils.read_file_contents(_current_path)
     if lines == nil then
@@ -40,7 +53,7 @@ end
 
 --- Close the TODO popup window
 M.close_ui = function()
-    _current_path = _current_path or _opts.todo_path
+    _current_path = _current_path or utils.get_default_path()
     if utils.is_popup_window_open() then
         local lines = utils.close_popup_window()
         if lines ~= nil then

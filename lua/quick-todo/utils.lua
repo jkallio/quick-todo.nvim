@@ -10,8 +10,8 @@ M.log = logger.new({
 })
 
 --- Returns the path for the current working directory
-M.get_working_directory_path = function()
-    return vim.fn.getcwd()
+M.get_default_path = function()
+    return vim.fn.getcwd() .. '/todo.txt'
 end
 
 --- Creates a file in the given path if it doesn't exist

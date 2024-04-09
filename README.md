@@ -16,10 +16,10 @@ This plugin for [Neovim](https://neovim.io) allows you to quickly manage your ta
 ## Features
 
 - Creates a `todo.txt` file automatically in your current working directory. (Fixed path is also possible)
-- Edit the TODO items without having to open the file.
+- Alternatively you can use a fixed path for the todo file.
+- Add entries directly into file without having to open the popup window.
 - Simple and intuitive interface.
-- Toggle a TODO item as done [x] or not done [ ] with Return key.
-- Use fixed global path for the TODO file.
+- Toggle a entry as done [x] or not done [ ] with Return key (in *Normal* mode)
 
 ## Usage
 
@@ -27,11 +27,12 @@ This plugin for [Neovim](https://neovim.io) allows you to quickly manage your ta
 local todo = require('quick-todo')
 todo.setup(opts) -- Setup the plugin with optional arguments
 todo.open_ui() -- Open the popup UI using default path
-todo.open_ui(path) -- Open the popup UI using fixed path
+todo.open_ui({use_fixed_path=true}) -- Open the popup UI using fixed path (defined in the configuration)
+todo.open_ui_with_path({path='path/to/file'}) -- Open the popup UI using given path
 todo.close_ui() -- Close the popup UI
 todo.toggle_ui() -- Toggle the popup UI
 todo.add() -- Add TODO entry into the default todo file
-todo.add(path) -- Add TODO entry into the defined todo file
+todo.add({use_fixed_path=true}) -- Add TODO entry using the fixed path
 ```
 
 ### Installation
@@ -72,15 +73,18 @@ return {
   config = function()
     local todo = require('quick-todo')
     todo.setup({
-        -- Path to the todo file -- If not set it will be created in the current working directory.
-        todo_path = '/path/to/fixed/global/todo.txt',
+        -- Path to the fixed todo file
+        fixed_path = '/path/to/todo.txt',
+        -- Always use fixed path. If false, the plugin will create a todo file in the current working directory
+        use_fixed_path = false,
         -- Popup window width in percentage
-        width = '50', 
+        width = '50',
     })
 
     vim.keymap.set('n', '<leader>ta', todo.add, { desc = 'quick-todo: Add new entry' })
     vim.keymap.set('n', '<leader>tt', todo.toggle_ui, { desc = 'quick-todo: toggle popup UI' })
-    vim.keymap.set('n', '<leader>tg', function() todo.open_ui('/path/to/global/todo/file.txt') end, { desc = 'quick-todo: Open global TODO' })
+    vim.keymap.set('n', '<leader>tg', function() todo.open_ui({use_fixed_path=true}) end, { desc = 'quick-todo: Open TODO using fixed path' })
+    vim.keymap.set('n', '<leader>tp', function() todo.open_ui_with_path({path='/path/to/todo.txt'}) end, { desc = 'quick-todo: Open TODO using specifed path' })
   end
 }
 ```
