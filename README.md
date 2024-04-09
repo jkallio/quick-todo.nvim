@@ -15,11 +15,10 @@ This plugin for [Neovim](https://neovim.io) allows you to quickly manage your ta
 
 ## Features
 
-- Creates a `todo.txt` file automatically in your current working directory. (Fixed path is also possible)
-- Alternatively you can use a fixed path for the todo file.
-- Add entries directly into file without having to open the popup window.
-- Simple and intuitive interface.
-- Toggle a entry as done [x] or not done [ ] with Return key (in *Normal* mode)
+- [x] Creates a `todo.txt` file automatically in your current working directory. (Alternatively you can specify the path).
+- [x] Add entries directly into file without opening the popup window.
+- [x] Simple and intuitive interface.
+- [x] Toggle a entry as done [x] or not done [ ] with Return key (in *Normal* mode)
 
 ## Usage
 
@@ -88,3 +87,7 @@ return {
   end
 }
 ```
+
+### Screenshots
+
+![Screenshot](./screenshots/quick-todo.png)
